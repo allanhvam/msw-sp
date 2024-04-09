@@ -4,10 +4,10 @@ import "@pnp/sp/sites/index.js";
 import "@pnp/sp/webs/index.js";
 import { setupServer } from 'msw/node';
 import * as assert from "node:assert";
-import test from "node:test";
+import { describe, test } from "node:test";
 import { handlers } from '../handlers.js';
 
-void test('web', async (t) => {
+void describe("web", async (t) => {
     const url = "https://tenant.sharepoint.com";
     const server = setupServer(...handlers({
         title: "tenant",
@@ -50,7 +50,7 @@ void test('web', async (t) => {
         };
     };
 
-    await t.test("title", async () => {
+    await test("title", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/web-title")));
 
         const webInfo = await sp.web();
@@ -58,7 +58,7 @@ void test('web', async (t) => {
         assert.equal(webInfo.Title, "Title");
     });
 
-    await t.test("ensureUser", async () => {
+    await test("ensureUser", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/web-ensureUser")));
 
         const result = await sp.web.ensureUser("user@tenant.onmicrosoft.com");

@@ -121,7 +121,7 @@ export const handlers = (tenant: Tenant) => {
     // Library used to match path:
     // https://github.com/pillarjs/path-to-regexp
     return [
-        // GET
+        // MARK: GET
         ...get(`/_api/web`, async (info) => {
             const site = info.params.site.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.get(), info);
@@ -207,7 +207,7 @@ export const handlers = (tenant: Tenant) => {
             return response(new Response(undefined, { status: 501, statusText: "Not Implemented" }), info);
         }),
 
-        // POST
+        // MARK: POST
         ...post("/_api/sp.ui.applicationpages.clientpeoplepickerwebserviceinterface.clientpeoplepickersearchuser", async (info) => {
             const payload = info.request.json();
             return response(tenantMock.clientPeoplePickerSearchUser(payload), info);
