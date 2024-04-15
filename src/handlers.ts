@@ -121,68 +121,68 @@ export const handlers = (tenant: Tenant) => {
     // Library used to match path:
     // https://github.com/pillarjs/path-to-regexp
     return [
-        // GET
+        // MARK: GET
         ...get(`/_api/web`, async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.get(), info);
         }),
         ...get(`/_api/web/lists`, async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.get(), info);
         }),
         ...get(`/_api/web/lists/getByTitle\\(':title'\\)`, async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/fields", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).fields.get(), info);
         }),
         ...get("/_api/web/getList\\(':listRelativeUrl'\\)/fields", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const listRelativeUrl = info.params.listRelativeUrl.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).fields.get(), info);
         }),
         ...get("/_api/web/getList\\(':listRelativeUrl'\\)/defaultView/viewfields", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const listRelativeUrl = info.params.listRelativeUrl.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).defaultView.viewFields.get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/items", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/forms", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).forms.get(), info);
         }),
         ...get("/_api/web/lists\\(':listId'\\)/items\\(:itemId\\)", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const listId = info.params.listId.toString();
             const itemId = info.params.itemId.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).items.getById(itemId).get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/items\\(:itemId\\)", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             const itemId = info.params.itemId.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.getById(itemId).get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/EffectiveBasePermissions", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).effectiveBasePermissions.get(), info);
         }),
         ...get("/_api/web/EffectiveBasePermissions", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.effectiveBasePermissions.get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/items\\(:itemId\\)/EffectiveBasePermissions", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             const itemId = info.params.itemId.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.getById(itemId).effectiveBasePermissions.get(), info);
@@ -199,7 +199,7 @@ export const handlers = (tenant: Tenant) => {
             }), { status: 200 }), info);
         }),
         ...get("/_api/web/siteUsers/getById\\(:id\\)", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const id = info.params.id.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.siteUsers.getById(id).get(), info);
         }),
@@ -207,23 +207,23 @@ export const handlers = (tenant: Tenant) => {
             return response(new Response(undefined, { status: 501, statusText: "Not Implemented" }), info);
         }),
 
-        // POST
+        // MARK: POST
         ...post("/_api/sp.ui.applicationpages.clientpeoplepickerwebserviceinterface.clientpeoplepickersearchuser", async (info) => {
             const payload = info.request.json();
             return response(tenantMock.clientPeoplePickerSearchUser(payload), info);
         }),
         ...post("/_api/web/ensureuser", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const payload = await info.request.json() as any;
             return response(tenantMock.sites.getSite(site).rootWeb.ensureUser(payload), info);
         }),
         ...post("/_api/web/getList\\(':listRelativeUrl'\\)/getitems", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const listRelativeUrl = info.params.listRelativeUrl.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).items.get(), info);
         }),
         ...post("/_api/web/lists/getByTitle\\(':title'\\)/items", async (info) => {
-            const site = info.params.site.toString() || "/";
+            const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             const payload = info.request.json();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.post(payload), info);
