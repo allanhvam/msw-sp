@@ -7,7 +7,7 @@ import * as assert from "node:assert";
 import { describe, test } from "node:test";
 import { handlers } from '../handlers.js';
 
-void describe("web", async (t) => {
+void describe("web", async () => {
     const url = "https://tenant.sharepoint.com";
     const server = setupServer(...handlers({
         title: "tenant",

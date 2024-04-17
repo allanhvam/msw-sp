@@ -15,25 +15,33 @@ export const Utils = {
 
         return f;
     },
-    urlEquals: (a: string, b: string) => {
-        const trimStart = (s: string, trim: string) => {
+    strings: {
+        trimStart: (s: string, trim: string) => {
             while (s.indexOf(trim) === 0) {
                 s = s.substring(trim.length);
             }
             return s;
-        };
+        },
 
-        const trimEnd = (s: string, trim: string) => {
+        trimEnd: (s: string, trim: string) => {
             while (s.lastIndexOf(trim) === s.length - trim.length) {
                 s = s.substring(0, s.length - trim.length);
             }
             return s;
-        };
+        },
 
-        const trim = (s: string, trim: string) => {
-            return trimEnd(trimStart(s, trim), trim);
-        };
+        trim: (s: string, trim: string) => {
+            return Utils.strings.trimEnd(Utils.strings.trimStart(s, trim), trim);
+        },
+    },
+    urls: {
+        equals: (a: string, b: string) => {
+            return Utils.strings.trim(a, "/").toLowerCase() ===
+                Utils.strings.trim(b, "/").toLowerCase();
+        },
 
-        return trim(a, "/").toLowerCase() === trim(b, "/").toLowerCase();
+        combine: (a: string, b: string) => {
+            return `${Utils.strings.trimEnd(a, "/")}/${Utils.strings.trimStart(b, "/")}`;
+        }
     },
 };

@@ -42,7 +42,10 @@ export class WebMock {
     }
 
     getList = (listRelativeUrl: string) => {
-        const list = this.web?.lists?.find(list => Utils.urlEquals(list.url, listRelativeUrl));
+        const list = this.web?.lists?.find(list => {
+            const url = Utils.urls.combine(this.web.serverRelativeUrl, list.url);
+            return Utils.urls.equals(url, listRelativeUrl);
+        });
 
         return new ListMock(list);
     };

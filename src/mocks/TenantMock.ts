@@ -12,6 +12,7 @@ export class TenantMock {
         return new SitesMock(this.tenant.sites);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public clientPeoplePickerSearchUser(queryParams: any) {
         const site = this.tenant.sites[""] || this.tenant.sites["/"];
 
