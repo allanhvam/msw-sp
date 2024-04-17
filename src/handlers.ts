@@ -150,6 +150,11 @@ export const handlers = (tenant: Tenant) => {
             const listRelativeUrl = info.params.listRelativeUrl.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).defaultView.viewFields.get(), info);
         }),
+        ...get("/_api/web/getList\\(':listRelativeUrl'\\)/items", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listRelativeUrl = info.params.listRelativeUrl.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).items.get(), info);
+        }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/items", async (info) => {
             const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();

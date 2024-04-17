@@ -1,3 +1,3 @@
 export { handlers } from "./handlers.js";
-export * from "./types";
+export * from "./types/index.js";
 
