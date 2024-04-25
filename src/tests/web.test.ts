@@ -63,7 +63,7 @@ void describe("web", async () => {
 
         const result = await sp.web.ensureUser("user@tenant.onmicrosoft.com");
 
-        assert.equal(result.data.Id, 1);
-        assert.equal(result.data.Title, "User");
+        assert.equal(result.Id, 1);
+        assert.equal(result.Title, "User");
     });
 });

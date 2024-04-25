@@ -22,6 +22,7 @@ void describe("lists", async () => {
                     lists: [
                         {
                             title: "Empty",
+                            id: "e3df5114-acc5-4901-8eb8-c55200d963d3",
                             baseTemplate: 100,
                             url: "Lists/Empty",
                             items: [],
@@ -90,10 +91,18 @@ void describe("lists", async () => {
     await test("empty", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/empty")));
 
-        const list = await sp.web.lists.getByTitle("Empty")();
-        assert.equal(list.Title, "Empty");
-        const items = await sp.web.lists.getByTitle("Empty").items();
-        assert.equal(items.length, 0);
+        const emptyLists = [
+            sp.web.lists.getByTitle("Empty"),
+            sp.web.lists.getById("e3df5114-acc5-4901-8eb8-c55200d963d3"),
+        ];
+
+        for (const emptyList of emptyLists) {
+            const emptyListInfo = await emptyList();
+            assert.equal(emptyListInfo.Title, "Empty");
+
+            const items = await emptyList.items();
+            assert.equal(items.length, 0);
+        }
     });
 
     await test("events", async () => {

@@ -135,6 +135,11 @@ export const handlers = (tenant: Tenant) => {
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).get(), info);
         }),
+        ...get(`/_api/web/lists\\(':listId'\\)`, async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listId = info.params.listId.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).get(), info);
+        }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/fields", async (info) => {
             const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
@@ -159,6 +164,11 @@ export const handlers = (tenant: Tenant) => {
             const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.get(), info);
+        }),
+        ...get("/_api/web/lists\\(':listId'\\)/items", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listId = info.params.listId.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).items.get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/forms", async (info) => {
             const site = info.params.site?.toString() || "/";
