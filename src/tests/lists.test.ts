@@ -99,6 +99,7 @@ void describe("lists", async () => {
         for (const emptyList of emptyLists) {
             const emptyListInfo = await emptyList();
             assert.equal(emptyListInfo.Title, "Empty");
+            assert.equal(emptyListInfo.ItemCount, 0);
 
             const items = await emptyList.items();
             assert.equal(items.length, 0);

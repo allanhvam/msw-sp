@@ -25,7 +25,26 @@ const response = async (response: Response,
         right: Filter
     }
 
-    const filterObjects = <T>(objects: Array<T>, ast: Filter | AndFilter | OrFilter): Array<T> => {
+    type CompareFilter = {
+        type: "gt" | "lt" | "ge" | "le"
+        left: FilterTarget
+        right: FilterTarget
+    }
+
+    const filterObjects = <T>(objects: Array<T>, ast: Filter | AndFilter | OrFilter | CompareFilter): Array<T> => {
+        const getTarget = (target: FilterTarget) => {
+            return (o: any) => {
+                switch (target.type) {
+                    case "literal":
+                        return target.value;
+                    case "property":
+                        return o[target.name];
+                    case "array":
+                        throw new Error("msw-sp: 'array' odata filter not implemented");
+                }
+            };
+        };
+
         switch (ast.type) {
             case "or": {
                 const left = filterObjects(objects, ast.left);
@@ -41,26 +60,38 @@ const response = async (response: Response,
 
                 return left.filter(l => right.find(r => r === l));
             }
+            case "lt": {
+                const left = getTarget(ast.left);
+                const right = getTarget(ast.right);
+
+                return objects.filter(o => left(o) < right(o));
+            }
+            case "le": {
+                const left = getTarget(ast.left);
+                const right = getTarget(ast.right);
+
+                return objects.filter(o => left(o) <= right(o));
+            }
+            case "gt": {
+                const left = getTarget(ast.left);
+                const right = getTarget(ast.right);
+
+                return objects.filter(o => left(o) > right(o));
+            }
+            case "ge": {
+                const left = getTarget(ast.left);
+                const right = getTarget(ast.right);
+
+                return objects.filter(o => left(o) >= right(o));
+            }
             case "eq": {
-                const getTarget = (target: FilterTarget) => {
-                    return (o: any) => {
-                        switch (target.type) {
-                            case "literal":
-                                return target.value;
-                            case "property":
-                                return o[target.name];
-                            case "array":
-                                throw new Error("sp: 'array' odata filter not implemented");
-                        }
-                    };
-                };
                 const left = getTarget(ast.left);
                 const right = getTarget(ast.right);
 
                 return objects.filter(o => left(o) === right(o));
             }
             default:
-                throw new Error(`sp: odata filter operator ${ast.type} not implemented.`);
+                throw new Error(`msw-sp: odata filter operator ${ast.type} not implemented.`);
         }
     };
 
