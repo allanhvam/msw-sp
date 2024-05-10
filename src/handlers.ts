@@ -104,10 +104,13 @@ const response = async (response: Response,
         if (uri.indexOf("?") === 0) {
             uri = uri.substring(1);
         }
+        // Replace + with space
         uri = uri.replace(/\+/g, " ");
         if (!uri) {
             return objects;
         }
+        // Replace datetime'DATE' with DATE
+        uri = uri.replace(/datetime'(\S+)'/g, "'$1'");
         const ast = parse(uri);
 
         if (ast.$filter) {

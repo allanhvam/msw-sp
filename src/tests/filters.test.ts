@@ -30,6 +30,7 @@ void describe("lists", async () => {
                                     Title: "Test"
                                 }
                             ],
+                            created: "2023-03-21T11:21:08Z",
                         },
                     ],
                 },
@@ -72,6 +73,22 @@ void describe("lists", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/empty")));
 
         const lists = await sp.web.lists.filter("ItemCount ge 1")();
+
+        assert.equal(lists.length, 1);
+    });
+
+    await test("lt datetime", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/empty")));
+
+        const lists = await sp.web.lists.filter(`Created lt datetime'${new Date().toISOString()}'`)();
+
+        assert.equal(lists.length, 1);
+    });
+
+    await test("gt datetime", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/empty")));
+
+        const lists = await sp.web.lists.filter(`Created gt datetime'2020-01-01T12:00:00Z'`)();
 
         assert.equal(lists.length, 1);
     });
