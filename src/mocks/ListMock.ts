@@ -34,7 +34,7 @@ export class ListMock {
 
     public get forms() {
         return {
-            get: () => {
+            get: async () => {
                 return new Response(
                     JSON.stringify([
                         {
@@ -60,6 +60,7 @@ export class ListMock {
                 ItemCount: this.list.items.length,
                 Hidden: this.list.hidden,
                 BaseTemplate: this.list.baseTemplate,
+                Created: this.list.created,
             }),
             { status: 200 },
         );

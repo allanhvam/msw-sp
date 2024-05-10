@@ -1,7 +1,7 @@
 import type { AndFilter, Filter, FilterTarget } from 'eh-odata-parser';
 import pkg from 'eh-odata-parser';
-import type { DefaultBodyType, PathParams, ResponseResolver, StrictRequest } from 'msw';
-import { http } from 'msw';
+import type { DefaultBodyType, DelayMode, PathParams, ResponseResolver, StrictRequest } from 'msw';
+import { delay, http } from 'msw';
 import type { HttpRequestResolverExtras } from 'msw/lib/core/handlers/HttpHandler.js';
 import { TenantMock } from './mocks/TenantMock.js';
 import type { Tenant } from './types/Tenant.js';
@@ -104,10 +104,13 @@ const response = async (response: Response,
         if (uri.indexOf("?") === 0) {
             uri = uri.substring(1);
         }
+        // Replace + with space
         uri = uri.replace(/\+/g, " ");
         if (!uri) {
             return objects;
         }
+        // Replace datetime'DATE' with DATE
+        uri = uri.replace(/datetime'(\S+)'/g, "'$1'");
         const ast = parse(uri);
 
         if (ast.$filter) {
@@ -129,24 +132,34 @@ const response = async (response: Response,
         });
 };
 
-export const handlers = (tenant: Tenant) => {
+export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode | number }) => {
+    const tenant = "tenant" in options ? options.tenant : options;
     const tenantMock = new TenantMock(tenant);
+
+    const wrap = <T extends Record<string, unknown>>(resolver: ResponseResolver<T>) => {
+        return async (...info: Parameters<ResponseResolver<T>>) => {
+            if ("delay" in options) {
+                await delay(options.delay);
+            }
+            return await resolver(...info);
+        };
+    };
 
     const get = (path: string, resolver: ResponseResolver<HttpRequestResolverExtras<PathParams>>) => {
         return [
-            http.get(`${tenant.url}/sites/:site${path}`, resolver),
-            http.get(`${tenant.url}${path}`, resolver),
-            http.get(`/sites/:site${path}`, resolver),
-            http.get(`${path}`, resolver),
+            http.get(`${tenant.url}/sites/:site${path}`, wrap(resolver)),
+            http.get(`${tenant.url}${path}`, wrap(resolver)),
+            http.get(`/sites/:site${path}`, wrap(resolver)),
+            http.get(`${path}`, wrap(resolver)),
         ];
     };
 
     const post = (path: string, resolver: ResponseResolver<HttpRequestResolverExtras<PathParams>, DefaultBodyType, undefined>) => {
         return [
-            http.post(`${tenant.url}/sites/:site${path}`, resolver),
-            http.post(`${tenant.url}${path}`, resolver),
-            http.post(`/sites/:site${path}`, resolver),
-            http.post(`${path}`, resolver),
+            http.post(`${tenant.url}/sites/:site${path}`, wrap(resolver)),
+            http.post(`${tenant.url}${path}`, wrap(resolver)),
+            http.post(`/sites/:site${path}`, wrap(resolver)),
+            http.post(`${path}`, wrap(resolver)),
         ];
     };
     // Library used to match path:

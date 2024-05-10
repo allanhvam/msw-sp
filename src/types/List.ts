@@ -10,6 +10,7 @@ export type List = {
     views?: Array<View>;
     contentTypes?: Array<ContentType>;
     hidden?: boolean;
+    created?: string;
 } & (GenericList | SitePagesList);
 
 // https://learn.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-wssts/8bf797af-288c-4a1d-a14b-cf5394e636cf
