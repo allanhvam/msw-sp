@@ -1,3 +1,4 @@
+import { Utils } from "../Utils.js";
 import type { List } from "../types/List.js";
 import { BasePermissionsMock } from "./BasePermissionsMock.js";
 import { FieldsMock } from "./FieldsMock.js";
@@ -53,14 +54,32 @@ export class ListMock {
             return new Response(undefined, { status: 404 });
         }
 
+        const created = this.list?.created ?? new Date(0).toISOString();
+
+        const getLastItemModifiedDate = () => {
+            const getDate = (item: Record<string, any>) => {
+                if (item.Modified) {
+                    return new Date(item.Modified).getTime();
+                }
+                if (item.Created) {
+                    return new Date(item.Created).getTime();
+                }
+                return new Date(0).getTime();
+            };
+            const sortedItems = [...this.list?.items ?? []].sort((a, b) => getDate(b) - getDate(a));
+            const lastModifiedItem = sortedItems[0];
+            const lastItemModifiedDate = lastModifiedItem?.Modified ?? lastModifiedItem?.Created ?? created;
+            return lastItemModifiedDate;
+        };
+
         return new Response(
             JSON.stringify({
-                Id: this.list.id,
-                Title: this.list.title,
-                ItemCount: this.list.items.length,
-                Hidden: this.list.hidden,
-                BaseTemplate: this.list.baseTemplate,
-                Created: this.list.created,
+                ...Utils.upperCaseKeys(Utils.objects.getSimple(this.list)),
+                ...{
+                    Created: created,
+                    LastItemModifiedDate: getLastItemModifiedDate(),
+                    ItemCount: this.list.items.length,
+                },
             }),
             { status: 200 },
         );

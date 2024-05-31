@@ -47,12 +47,38 @@ void describe("lists", async () => {
                                     "Title": "Event",
                                     "Start": "2024-04-22T06:00:00Z",
                                     "End": "2024-04-22T14:00:00Z",
-                                    "ID": 457,
-                                    "Modified": "2024-01-04T11:56:54Z",
-                                    "Created": "2023-10-10T06:01:48Z",
+                                    "ID": 1,
+                                    "Modified": "2023-01-04T11:56:54Z",
+                                    "Created": "2023-01-01T06:01:48Z",
                                     "AuthorId": 1073741822,
                                     "EditorId": 1073741822,
-                                }
+                                },
+                                {
+                                    "FileSystemObjectType": 0,
+                                    "Id": 2,
+                                    "ContentTypeId": "0x0100EE277107DD3E9F4CBC7D33048BB8CB92",
+                                    "Title": "Event 2",
+                                    "Start": "2024-04-23T06:00:00Z",
+                                    "End": "2024-04-23T14:00:00Z",
+                                    "ID": 2,
+                                    "Modified": "2024-01-04T11:56:54Z",
+                                    "Created": "2024-01-01T06:01:48Z",
+                                    "AuthorId": 1073741822,
+                                    "EditorId": 1073741822,
+                                },
+                                {
+                                    "FileSystemObjectType": 0,
+                                    "Id": 3,
+                                    "ContentTypeId": "0x0100EE277107DD3E9F4CBC7D33048BB8CB92",
+                                    "Title": "Event 3",
+                                    "Start": "2024-04-24T06:00:00Z",
+                                    "End": "2024-04-24T14:00:00Z",
+                                    "ID": 2,
+                                    "Modified": "2022-01-04T11:56:54Z",
+                                    "Created": "2022-01-01T06:01:48Z",
+                                    "AuthorId": 1073741822,
+                                    "EditorId": 1073741822,
+                                },
                             ]
                         },
                     ],
@@ -100,7 +126,7 @@ void describe("lists", async () => {
             const emptyListInfo = await emptyList();
             assert.equal(emptyListInfo.Title, "Empty");
             assert.equal(emptyListInfo.ItemCount, 0);
-
+            assert.equal(emptyListInfo.LastItemModifiedDate, new Date(0).toISOString());
             const items = await emptyList.items();
             assert.equal(items.length, 0);
         }
@@ -109,9 +135,32 @@ void describe("lists", async () => {
     await test("events", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/events")));
 
-        const events = await sp.web.getList("/sites/events/lists/events").items();
-        assert.equal(events.length, 1);
+        const eventList = sp.web.getList("/sites/events/lists/events");
+        const eventListInfo = await eventList();
+        const events = await eventList.items();
+        assert.equal(events.length, 3);
         const event = events[0];
         assert.equal(event["Title"], "Event");
+
+        assert.equal(eventListInfo.LastItemModifiedDate, "2024-01-04T11:56:54Z");
+    });
+
+    await test("add", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/events")));
+
+        const title = new Date().getTime().toString();
+        const listInfo = await sp.web.lists.add(title, "Description", 100, true, {
+            NoCrawl: true,
+        });
+
+        assert.equal(listInfo.Title, title);
+
+        const lists = await sp.web.lists();
+        const list = lists.find(l => l.Title === title);
+        assert.ok(list);
+        assert.equal(list.Description, "Description");
+        assert.equal(list.BaseTemplate, 100);
+        assert.equal(list.ContentTypesEnabled, true);
+        assert.equal(list.NoCrawl, true);
     });
 });
