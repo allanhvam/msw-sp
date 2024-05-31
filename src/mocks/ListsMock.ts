@@ -1,3 +1,4 @@
+import { Utils } from "../Utils.js";
 import type { List } from "../types/List.js";
 import { ListMock } from "./ListMock.js";
 
@@ -35,5 +36,18 @@ export class ListsMock {
             JSON.stringify(infos),
             { status: 200 },
         );
+    };
+
+    post = async (payload: any) => {
+        if (this.lists === undefined) {
+            this.lists = [];
+        }
+        const list = Utils.lowerCaseKeys(payload) as List;
+        list.id = Utils.strings.getGUID();
+        list.created = new Date().toISOString();
+        list.items = [];
+        this.lists.push(list);
+
+        return await new ListMock(list).get();
     };
 }

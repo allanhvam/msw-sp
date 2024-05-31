@@ -189,6 +189,11 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).fields.get(), info);
         }),
+        ...get("/_api/web/getList\\(':listRelativeUrl'\\)", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listRelativeUrl = info.params.listRelativeUrl.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).get(), info);
+        }),
         ...get("/_api/web/getList\\(':listRelativeUrl'\\)/fields", async (info) => {
             const site = info.params.site?.toString() || "/";
             const listRelativeUrl = info.params.listRelativeUrl.toString();
@@ -263,7 +268,7 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             return response(await tenantMock.sites.getSite(site).rootWeb.siteUsers.getById(id).get(), info);
         }),
         ...get("/_api/*", async (info) => {
-            return response(new Response(undefined, { status: 501, statusText: "Not Implemented" }), info);
+            return response(new Response(undefined, { status: 501, statusText: "Not Implemented (GET)" }), info);
         }),
 
         // MARK: POST
@@ -275,6 +280,11 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const site = info.params.site?.toString() || "/";
             const payload = await info.request.json() as any;
             return response(tenantMock.sites.getSite(site).rootWeb.ensureUser(payload), info);
+        }),
+        ...post("/_api/web/lists", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const payload = await info.request.json() as any;
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.post(payload), info);
         }),
         ...post("/_api/web/getList\\(':listRelativeUrl'\\)/getitems", async (info) => {
             const site = info.params.site?.toString() || "/";
@@ -288,7 +298,7 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.post(payload), info);
         }),
         ...post("/_api/*", async (...params) => {
-            return response(new Response(undefined, { status: 501, statusText: "Not Implemented" }), ...params);
+            return response(new Response(undefined, { status: 501, statusText: "Not Implemented (POST)" }), ...params);
         }),
     ];
 };
