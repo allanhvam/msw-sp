@@ -36,13 +36,31 @@ export class ListMock {
     public get forms() {
         return {
             get: async () => {
+                if (!this.list) {
+                    return new Response(
+                        undefined,
+                        { status: 404 },
+                    );
+                }
+                if (!this.list.forms) {
+                    return new Response(
+                        JSON.stringify([
+                            {
+                                "ServerRelativeUrl": `/${this.list.url || this.list.title}/DispForm.aspx`,
+                                "FormType": 4
+                            },
+                            {
+                                "ServerRelativeUrl": `/${this.list.url || this.list.title}/EditForm.aspx`,
+                                "FormType": 6
+                            }
+                        ]),
+                        { status: 200 },
+                    );
+                }
+
                 return new Response(
-                    JSON.stringify([
-                        {
-                            "ServerRelativeUrl": `/${this.list?.title}/EditForm.aspx`,
-                            "FormType": 6
-                        }
-                    ]),
+                    JSON.stringify(this.list.forms.map(Utils.upperCaseKeys)
+                    ),
                     { status: 200 },
                 );
             }
