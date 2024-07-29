@@ -1,4 +1,5 @@
 import { SPFx, spfi } from "@pnp/sp";
+import "@pnp/sp/fields/index.js";
 import "@pnp/sp/items/index.js";
 import "@pnp/sp/lists/index.js";
 import "@pnp/sp/site-users/index.js";
@@ -79,7 +80,14 @@ void describe("lists", async () => {
                                     "AuthorId": 1073741822,
                                     "EditorId": 1073741822,
                                 },
-                            ]
+                            ],
+                            fields: [
+                                {
+                                    title: "Id",
+                                    internalName: "ID",
+                                    typeAsString: "Counter",
+                                },
+                            ],
                         },
                     ],
                 },
@@ -162,5 +170,15 @@ void describe("lists", async () => {
         assert.equal(list.BaseTemplate, 100);
         assert.equal(list.ContentTypesEnabled, true);
         assert.equal(list.NoCrawl, true);
+    });
+
+    await test("fields", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/events")));
+
+        const eventList = sp.web.lists.getByTitle("Events");
+        const fields = await eventList.fields.select("InternalName")();
+        assert.equal(fields.length, 1);
+        const field = fields[0];
+        assert.equal(field.InternalName, "ID");
     });
 });
