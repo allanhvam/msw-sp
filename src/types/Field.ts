@@ -14,6 +14,10 @@ type DateTimeField = {
     typeAsString: "DateTime";
 }
 
+type CounterField = {
+    typeAsString: "Counter";
+}
+
 type LookupField = {
     typeAsString: "Lookup";
     lookupField: string;
@@ -24,5 +28,10 @@ export type Field = {
     title: string;
     description?: string;
     internalName: string;
-} & (TextField | LookupField | ComputedField | NumberField | DateTimeField);
+} & (TextField |
+    LookupField |
+    ComputedField |
+    NumberField |
+    DateTimeField |
+    CounterField);
 

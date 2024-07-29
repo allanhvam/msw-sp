@@ -11,7 +11,31 @@ export type List = {
     contentTypes?: Array<ContentType>;
     hidden?: boolean;
     created?: string;
+    forms?: Array<Form>;
 } & (GenericList | SitePagesList);
+
+export enum PageType {
+    Invalid = -1,
+    DefaultView = 0,
+    NormalView = 1,
+    DialogView = 2,
+    View = 3,
+    DisplayForm = 4,
+    DisplayFormDialog = 5,
+    EditForm = 6,
+    EditFormDialog = 7,
+    NewForm = 8,
+    NewFormDialog = 9,
+    SolutionForm = 10,
+    PAGE_MAXITEMS = 11
+}
+
+export type Form = {
+    id?: string,
+    formType?: PageType,
+    serverRelativeUrl?: string,
+    decodedUrl?: string,
+}
 
 // https://learn.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-wssts/8bf797af-288c-4a1d-a14b-cf5394e636cf
 export type GenericList = {

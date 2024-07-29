@@ -239,6 +239,11 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const listRelativeUrl = info.params.listRelativeUrl.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).get(), info);
         }),
+        ...get("/_api/web/getList\\(':listRelativeUrl'\\)/forms", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listRelativeUrl = info.params.listRelativeUrl.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.getList(listRelativeUrl).forms.get(), info);
+        }),
         ...get("/_api/web/getList\\(':listRelativeUrl'\\)/fields", async (info) => {
             const site = info.params.site?.toString() || "/";
             const listRelativeUrl = info.params.listRelativeUrl.toString();
@@ -263,6 +268,11 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const site = info.params.site?.toString() || "/";
             const listId = info.params.listId.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).items.get(), info);
+        }),
+        ...get("/_api/web/lists\\(':listId'\\)/forms", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listId = info.params.listId.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).forms.get(), info);
         }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/forms", async (info) => {
             const site = info.params.site?.toString() || "/";
