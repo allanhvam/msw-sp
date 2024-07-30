@@ -18,6 +18,12 @@ type CounterField = {
     typeAsString: "Counter";
 }
 
+type NoteField = {
+    typeAsString: "Note";
+    richText?: boolean;
+    richTextMode?: "RichTextMode";
+}
+
 type LookupField = {
     typeAsString: "Lookup";
     lookupField: string;
@@ -33,5 +39,6 @@ export type Field = {
     ComputedField |
     NumberField |
     DateTimeField |
-    CounterField);
+    CounterField |
+    NoteField);
 
