@@ -229,6 +229,11 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const listId = info.params.listId.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).get(), info);
         }),
+        ...get(`/_api/web/lists\\(':listId'\\)/fields`, async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listId = info.params.listId.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).fields.get(), info);
+        }),
         ...get("/_api/web/lists/getByTitle\\(':title'\\)/fields", async (info) => {
             const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
