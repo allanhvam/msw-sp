@@ -49,7 +49,7 @@ void describe("items", async () => {
         };
     };
 
-    await test("add/update/delete", async () => {
+    await test("crud", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/items")));
 
         const list = sp.web.lists.getByTitle("List");
