@@ -1,3 +1,4 @@
+import type { DefaultBodyType } from "msw";
 import { ItemMock } from "./ItemMock.js";
 
 /**
@@ -9,13 +10,13 @@ export class ItemsMock {
 
     getById = (id: number | string) => {
         if (!id.toString()) {
-            return new ItemMock(undefined);
+            return new ItemMock(this.items, undefined);
         }
         const item = this.items?.find(item =>
             item.Id?.toString() === id.toString() ||
             item.ID?.toString() === id.toString());
 
-        return new ItemMock(item);
+        return new ItemMock(this.items, item);
     };
 
     get = async () => {
@@ -23,7 +24,7 @@ export class ItemsMock {
             return new Response(undefined, { status: 404 });
         }
 
-        const mocks = this.items.map(item => new ItemMock(item));
+        const mocks = this.items.map(item => new ItemMock(this.items, item));
         const infos = new Array<any>();
         for (let i = 0; i !== mocks.length; i++) {
             const list = await mocks[i].get();
@@ -36,7 +37,7 @@ export class ItemsMock {
         );
     };
 
-    post = async (payload: any) => {
+    post = async (payload: DefaultBodyType) => {
         let ids = this.items?.map(i => i.Id).filter(i => i).map(i => Number.parseInt(i));
         if (!ids || ids.length === 0) {
             ids = [0];
