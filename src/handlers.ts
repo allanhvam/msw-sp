@@ -323,6 +323,10 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.rootFolder.get(), info);
         }),
+        ...get("/_api/web/defaultDocumentLibrary/getitems", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.items.get(), info);
+        }),
         ...get("/_api/web/EffectiveBasePermissions", async (info) => {
             const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.effectiveBasePermissions.get(), info);
@@ -376,8 +380,27 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
         ...post("/_api/web/lists/getByTitle\\(':title'\\)/items", async (info) => {
             const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
-            const payload = info.request.json();
+            const payload = await info.request.json();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.post(payload), info);
+        }),
+        ...post("/_api/web/lists/getByTitle\\(':title'\\)/items\\(:id\\)", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const title = info.params.title.toString();
+            const id = info.params.id.toString();
+
+            if (info.request.headers.get("x-http-method") === "DELETE") {
+                return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.getById(id).delete(), info);
+            }
+
+            const payload = await info.request.json();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.getById(id).post(payload), info);
+        }),
+        ...post("/_api/web/lists/getByTitle\\(':title'\\)/items\\(:id\\)/validateupdatelistitem", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const title = info.params.title.toString();
+            const id = info.params.id.toString();
+            const payload = await info.request.json();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.getById(id).validateUpdateListItem(payload), info);
         }),
         ...post("/_api/*", async (...params) => {
             return response(new Response(undefined, { status: 501, statusText: "Not Implemented (POST)" }), ...params);

@@ -5,8 +5,7 @@ import { BasePermissionsMock } from "./BasePermissionsMock.js";
 import { ListMock } from "./ListMock.js";
 import { ListsMock } from "./ListsMock.js";
 import { UsersMock } from "./UsersMock.js";
-
-type Parent<P, T> = T & { parent?: P };
+import type { Parent } from "./types/Parent.js";
 
 /**
  * @internal
