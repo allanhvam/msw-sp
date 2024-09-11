@@ -169,23 +169,40 @@ void describe("lists", async () => {
         assert.equal(eventListInfo.LastItemModifiedDate, "2024-01-04T11:56:54Z");
     });
 
-    await test("add", async () => {
+    await test("crud", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/events")));
 
-        const title = new Date().getTime().toString();
+        // Create
+        let title = new Date().getTime().toString();
         const listInfo = await sp.web.lists.add(title, "Description", 100, true, {
             NoCrawl: true,
         });
 
         assert.equal(listInfo.Title, title);
 
-        const lists = await sp.web.lists();
-        const list = lists.find(l => l.Title === title);
+        let lists = await sp.web.lists();
+        let list = lists.find(l => l.Title === title);
         assert.ok(list);
+        assert.ok(list.Id);
         assert.equal(list.Description, "Description");
         assert.equal(list.BaseTemplate, 100);
         assert.equal(list.ContentTypesEnabled, true);
         assert.equal(list.NoCrawl, true);
+
+        // Update
+        title = `${listInfo.Title} update`;
+        await sp.web.lists.getById(list.Id).update({
+            Title: title,
+        });
+        lists = await sp.web.lists();
+        list = lists.find(l => l.Title === title);
+        assert.ok(list);
+
+        // Delete
+        await sp.web.lists.getById(list.Id).delete();
+        lists = await sp.web.lists();
+        list = lists.find(l => l.Title === title);
+        assert.ok(list === undefined);
     });
 
     await test("fields", async () => {

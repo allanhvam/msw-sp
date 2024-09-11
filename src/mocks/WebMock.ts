@@ -28,7 +28,7 @@ export class WebMock {
 
     public get defaultDocumentLibrary() {
         const list = this.web.lists?.find(l => l.baseTemplate === 101 && l.isDefaultDocumentLibrary);
-        return new ListMock(list);
+        return new ListMock(this.web?.lists, list);
     }
 
     public ensureUser(payload: { logonName: string }) {
@@ -51,7 +51,7 @@ export class WebMock {
             return Utils.urls.equals(url, listRelativeUrl);
         });
 
-        return new ListMock(list);
+        return new ListMock(this.web?.lists, list);
     };
 
     get = async () => {

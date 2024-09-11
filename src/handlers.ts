@@ -274,6 +274,10 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).rootFolder.get(), info);
         }),
+        ...get("/_api/web/defaultDocumentLibrary/items", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.items.get(), info);
+        }),
         ...get("/_api/web/lists\\(':listId'\\)/items", async (info) => {
             const site = info.params.site?.toString() || "/";
             const listId = info.params.listId.toString();
@@ -382,6 +386,28 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const title = info.params.title.toString();
             const payload = await info.request.json();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.post(payload), info);
+        }),
+        ...post("/_api/web/lists/getByTitle\\(':title'\\)", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const title = info.params.title.toString();
+
+            if (info.request.headers.get("x-http-method") === "DELETE") {
+                return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).delete(), info);
+            }
+
+            const payload = await info.request.json();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).post(payload), info);
+        }),
+        ...post("/_api/web/lists\\(':listId'\\)", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listId = info.params.listId.toString();
+
+            if (info.request.headers.get("x-http-method") === "DELETE") {
+                return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).delete(), info);
+            }
+
+            const payload = await info.request.json();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).post(payload), info);
         }),
         ...post("/_api/web/lists/getByTitle\\(':title'\\)/items\\(:id\\)", async (info) => {
             const site = info.params.site?.toString() || "/";
