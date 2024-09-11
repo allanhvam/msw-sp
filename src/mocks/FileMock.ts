@@ -15,6 +15,8 @@ export class FileMock {
 
         const f = Utils.upperCaseKeys(this.file);
         delete f.Content;
+        f.Exists = true;
+        
         return new Response(
             JSON.stringify(f),
             { status: 200 },

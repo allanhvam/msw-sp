@@ -1,7 +1,9 @@
 import { Utils } from "../Utils.js";
+import type { Folder } from "../types/Folder.js";
 import type { Site } from "../types/Site.js";
 import type { Web } from "../types/Web.js";
 import { BasePermissionsMock } from "./BasePermissionsMock.js";
+import { FileMock } from "./FileMock.js";
 import { ListMock } from "./ListMock.js";
 import { ListsMock } from "./ListsMock.js";
 import { UsersMock } from "./UsersMock.js";
@@ -52,6 +54,44 @@ export class WebMock {
         });
 
         return new ListMock(this.web?.lists, list);
+    };
+
+    getFileById = (id: string) => {
+        if (!this.web.lists) {
+            return new FileMock(undefined, undefined);
+        }
+        for (let i = 0; i !== this.web.lists?.length; i++) {
+            const list = this.web.lists[i];
+            if (list.baseTemplate !== 101 || !list.rootFolder) {
+                continue;
+            }
+
+            const getFile = (folder: Folder) => {
+                if (!folder) {
+                    return undefined;
+                }
+                let file = folder.files?.find(f => f.uniqueId === id);
+                if (file) {
+                    return file;
+                }
+                if (folder.folders) {
+                    for (let i = 0; i !== folder.folders?.length; i++) {
+                        file = getFile(folder.folders[i]);
+                        if (file) {
+                            return file;
+                        }
+                    }   
+                }
+                return undefined;
+            };
+
+            const file = getFile(list.rootFolder);
+            if (file) {
+                return new FileMock(list.rootFolder.files, file);
+            }
+        }
+
+        return new FileMock(undefined, undefined);
     };
 
     get = async () => {

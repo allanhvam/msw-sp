@@ -361,6 +361,11 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const id = info.params.id.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.siteUsers.getById(id).get(), info);
         }),
+        ...get("/_api/web/getFileById\\(':id'\\)", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const id = info.params.id.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.getFileById(id).get(), info);
+        }),
         ...get("/_api/*", async (info) => {
             return response(new Response(undefined, { status: 501, statusText: "Not Implemented (GET)" }), info);
         }),

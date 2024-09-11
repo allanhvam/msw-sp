@@ -65,9 +65,18 @@ void describe("files", async () => {
     await test("files", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/files")));
 
-        const files = await sp.web.defaultDocumentLibrary.rootFolder.files();
-        assert.ok(files);
-        assert.equal(files.length, 1);
-        assert.equal(files[0].Name, "Package.txt");
+        const fileInfos = await sp.web.defaultDocumentLibrary.rootFolder.files();
+        assert.ok(fileInfos);
+        assert.equal(fileInfos.length, 1);
+        let fileInfo = fileInfos[0];
+        assert.equal(fileInfo.UniqueId, "7d131b18-9ff1-43e5-9c76-42ee9958088d");
+        assert.equal(fileInfo.Name, "Package.txt");
+
+        const file = sp.web.getFileById(fileInfo.UniqueId);
+        fileInfo = await file();
+        assert.equal(fileInfo.Name, "Package.txt");
+
+        const exists = await file.exists();
+        assert.ok(exists);
     });
 });
