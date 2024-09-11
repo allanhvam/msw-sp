@@ -2,6 +2,7 @@ import { Utils } from "../Utils.js";
 import type { List } from "../types/List.js";
 import { BasePermissionsMock } from "./BasePermissionsMock.js";
 import { FieldsMock } from "./FieldsMock.js";
+import { FolderMock } from "./FolderMock.js";
 import { ItemsMock } from "./ItemsMock.js";
 import { ViewMock } from "./ViewMock.js";
 import { ViewsMock } from "./ViewsMock.js";
@@ -31,6 +32,10 @@ export class ListMock {
 
     public get defaultView() {
         return new ViewMock(this.list?.views?.find(view => view.defaultView));
+    }
+
+    public get rootFolder() {
+        return new FolderMock({ name: this.list?.title });
     }
 
     public get forms() {

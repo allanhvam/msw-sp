@@ -31,6 +31,22 @@ void describe("lists", async () => {
                     ],
                 },
             },
+            "defaultDocumentLibrary": {
+                rootWeb: {
+                    title: "defaultDocumentLibrary Site",
+                    serverRelativeUrl: "/sites/defaultDocumentLibrary",
+                    lists: [
+                        {
+                            title: "Documents",
+                            id: "4b3dad0c-7bc9-463c-acb6-37c1c6f7498f",
+                            baseTemplate: 101,
+                            url: "Lists/Documents",
+                            items: [],
+                            isDefaultDocumentLibrary: true,
+                        },
+                    ],
+                },
+            },
             "events": {
                 rootWeb: {
                     title: "Events Site",
@@ -180,5 +196,13 @@ void describe("lists", async () => {
         assert.equal(fields.length, 1);
         const field = fields[0];
         assert.equal(field.InternalName, "ID");
+    });
+
+    await test("defaultDocumentLibrary", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/defaultDocumentLibrary")));
+
+        const list = await sp.web.defaultDocumentLibrary();
+
+        assert.equal(list["IsDefaultDocumentLibrary"], true);
     });
 });

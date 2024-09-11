@@ -12,7 +12,7 @@ export type List = {
     hidden?: boolean;
     created?: string;
     forms?: Array<Form>;
-} & (GenericList | SitePagesList);
+} & (GenericList | DocumentLibraryList | SitePagesList);
 
 export enum PageType {
     Invalid = -1,
@@ -44,8 +44,14 @@ export type GenericList = {
      * 101 DocumentLibrary
      * 106 Events
      */
-    baseTemplate?: 100 | 101 | 106;
+    baseTemplate?: 100 | 106;
     items: Array<Record<string, any>>;
+}
+
+export type DocumentLibraryList = {
+    baseTemplate: 101;
+    items: Array<Record<string, any>>;
+    isDefaultDocumentLibrary?: boolean;
 }
 
 export type SitePagesList = {

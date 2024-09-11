@@ -27,6 +27,11 @@ export class WebMock {
         return new BasePermissionsMock(this);
     }
 
+    public get defaultDocumentLibrary() {
+        const list = this.web.lists?.find(l => l.baseTemplate === 101 && l.isDefaultDocumentLibrary);
+        return new ListMock(list);
+    }
+
     public ensureUser(payload: { logonName: string }) {
         const user = this.web.parent?.users?.find(u => u.loginName === payload.logonName);
         if (!user) {

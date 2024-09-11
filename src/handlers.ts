@@ -269,10 +269,20 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).items.get(), info);
         }),
+        ...get("/_api/web/lists/getByTitle\\(':title'\\)/rootFolder", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const title = info.params.title.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).rootFolder.get(), info);
+        }),
         ...get("/_api/web/lists\\(':listId'\\)/items", async (info) => {
             const site = info.params.site?.toString() || "/";
             const listId = info.params.listId.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).items.get(), info);
+        }),
+        ...get("/_api/web/lists\\(':listId'\\)/rootFolder", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            const listId = info.params.listId.toString();
+            return response(await tenantMock.sites.getSite(site).rootWeb.lists.getById(listId).rootFolder.get(), info);
         }),
         ...get("/_api/web/lists\\(':listId'\\)/forms", async (info) => {
             const site = info.params.site?.toString() || "/";
@@ -300,6 +310,18 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const site = info.params.site?.toString() || "/";
             const title = info.params.title.toString();
             return response(await tenantMock.sites.getSite(site).rootWeb.lists.getByTitle(title).effectiveBasePermissions.get(), info);
+        }),
+        ...get("/_api/web/defaultDocumentLibrary", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.get(), info);
+        }),
+        ...get("/_api/web/defaultDocumentLibrary/EffectiveBasePermissions", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.effectiveBasePermissions.get(), info);
+        }),
+        ...get("/_api/web/defaultDocumentLibrary/rootFolder", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.rootFolder.get(), info);
         }),
         ...get("/_api/web/EffectiveBasePermissions", async (info) => {
             const site = info.params.site?.toString() || "/";
