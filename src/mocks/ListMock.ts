@@ -36,6 +36,9 @@ export class ListMock {
     }
 
     public get rootFolder() {
+        if (this.list && "rootFolder" in this.list && this.list.rootFolder) {
+            return new FolderMock(this.list.rootFolder);
+        }
         return new FolderMock({ name: this.list?.title });
     }
 

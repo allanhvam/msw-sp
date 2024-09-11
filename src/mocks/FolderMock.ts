@@ -1,11 +1,16 @@
 import { Utils } from "../Utils.js";
 import type { Folder } from "../types/Folder.js";
+import { FilesMock } from "./FilesMock.js";
 
 /**
  * @internal
  */
 export class FolderMock {
     constructor(private folder: Folder) {
+    }
+
+    public get files() {
+        return new FilesMock(this.folder.files);
     }
 
     get = async () => {

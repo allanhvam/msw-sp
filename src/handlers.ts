@@ -327,6 +327,10 @@ export const handlers = (options: Tenant | { tenant: Tenant, delay?: DelayMode |
             const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.rootFolder.get(), info);
         }),
+        ...get("/_api/web/defaultDocumentLibrary/rootFolder/files", async (info) => {
+            const site = info.params.site?.toString() || "/";
+            return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.rootFolder.files.get(), info);
+        }),
         ...get("/_api/web/defaultDocumentLibrary/getitems", async (info) => {
             const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.defaultDocumentLibrary.items.get(), info);
