@@ -12,12 +12,12 @@ export class ListsMock {
 
     getByTitle = (title: string) => {
         const list = this.lists?.find(list => list.title === title);
-        return new ListMock(list);
+        return new ListMock(this.lists, list);
     };
 
     getById = (id: string) => {
         const list = this.lists?.find(list => list.id === id);
-        return new ListMock(list);
+        return new ListMock(this.lists, list);
     };
 
     get = async () => {
@@ -25,7 +25,7 @@ export class ListsMock {
             return new Response(undefined, { status: 404 });
         }
 
-        const mocks = this.lists.map(list => new ListMock(list));
+        const mocks = this.lists.map(list => new ListMock(this.lists, list));
         const infos = new Array<any>();
         for (let i = 0; i !== mocks.length; i++) {
             const list = await mocks[i].get();
@@ -48,6 +48,6 @@ export class ListsMock {
         list.items = [];
         this.lists.push(list);
 
-        return await new ListMock(list).get();
+        return await new ListMock(this.lists, list).get();
     };
 }

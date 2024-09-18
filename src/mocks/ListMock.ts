@@ -1,3 +1,4 @@
+import type { DefaultBodyType } from "msw";
 import { Utils } from "../Utils.js";
 import type { List } from "../types/List.js";
 import { BasePermissionsMock } from "./BasePermissionsMock.js";
@@ -11,7 +12,7 @@ import { ViewsMock } from "./ViewsMock.js";
  * @internal
  */
 export class ListMock {
-    constructor(private list?: List) {
+    constructor(private lists?: Array<List>, private list?: List) {
     }
 
     public get fields() {
@@ -35,6 +36,9 @@ export class ListMock {
     }
 
     public get rootFolder() {
+        if (this.list && "rootFolder" in this.list && this.list.rootFolder) {
+            return new FolderMock(this.list.rootFolder);
+        }
         return new FolderMock({ name: this.list?.title });
     }
 
@@ -104,6 +108,36 @@ export class ListMock {
                     ItemCount: this.list.items.length,
                 },
             }),
+            { status: 200 },
+        );
+    };
+
+    post = async (payload: DefaultBodyType) => {
+        if (!this.list) {
+            return new Response(undefined, { status: 404 });
+        }
+
+        Object.assign(this.list, payload);
+
+        return new Response(
+            JSON.stringify({}),
+            { status: 200 },
+        );
+    };
+
+    delete = async () => {
+        if (!this.list) {
+            return new Response(undefined, { status: 404 });
+        }
+
+        const index = this.lists?.findIndex(i => i.id === this.list!.id);
+        this.list = undefined;
+        if (index !== undefined) {
+            this.lists?.splice(index, 1);
+        }
+
+        return new Response(
+            JSON.stringify({}),
             { status: 200 },
         );
     };

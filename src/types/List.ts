@@ -1,5 +1,6 @@
 import type { ContentType } from "./ContentType.js";
 import type { Field } from "./Field.js";
+import type { Folder } from "./Folder.js";
 import type { View } from "./View.js";
 
 export type List = {
@@ -52,6 +53,8 @@ export type DocumentLibraryList = {
     baseTemplate: 101;
     items: Array<Record<string, any>>;
     isDefaultDocumentLibrary?: boolean;
+
+    rootFolder?: Folder;
 }
 
 export type SitePagesList = {
