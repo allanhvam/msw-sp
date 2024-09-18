@@ -91,4 +91,25 @@ void describe("items", async () => {
         items = await list.items();
         assert.equal(items.length, 0);
     });
+
+    await test("items, async Iterator", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/items")));
+
+        const list = sp.web.lists.getByTitle("List");
+
+        const items = await list.items();
+        assert.equal(items.length, 0);
+
+        // Add
+        for (let i = 0; i !== 55; i++) {
+            await list.items.add({ Title: `New ${i}` });
+        }
+
+        let array = new Array();
+        for await (const page of list.items) {
+            array = array.concat(page);
+        }
+
+        assert.equal(array.length, 55);
+    });
 });

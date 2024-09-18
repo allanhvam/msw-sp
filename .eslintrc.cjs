@@ -12,5 +12,6 @@ module.exports = {
         semi: "error",
         "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-array-constructor": "off",
     },
 };
