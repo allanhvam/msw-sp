@@ -29,12 +29,17 @@ const tenant = {
    the handlers to the specific setup function:
 
 ```
-import { handlers } from 'msw-sp';
 
 // Node.js
+import { setupServer } from 'msw/node'
+import { handlers } from 'msw-sp';
+
 export const server = setupServer(...handlers({ tenant }));
 
 // Browser
+import { setupServer } from 'msw/browser'
+import { handlers } from 'msw-sp';
+
 export const worker = setupWorker(...handlers({ tenant }));
 ```
 
