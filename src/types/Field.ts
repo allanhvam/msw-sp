@@ -34,6 +34,8 @@ export type Field = {
     title: string;
     description?: string;
     internalName: string;
+    hidden?: boolean;
+    readOnlyField?: boolean;
 } & (TextField |
     LookupField |
     ComputedField |

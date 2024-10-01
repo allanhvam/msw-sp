@@ -1,6 +1,6 @@
 {
     "name": "msw-sp",
-    "version": "1.11.0",
+    "version": "1.12.0",
     "description": "MSW handlers for mocking SharePoint REST api.",
     "main": "lib/index.js",
     "engines": {
