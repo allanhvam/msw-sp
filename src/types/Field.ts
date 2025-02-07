@@ -30,6 +30,10 @@ type LookupField = {
     lookupList: string;
 }
 
+type BooleanField = {
+    typeAsString: "Boolean";
+}
+
 export type Field = {
     title: string;
     description?: string;
@@ -42,5 +46,6 @@ export type Field = {
     NumberField |
     DateTimeField |
     CounterField |
-    NoteField);
+    NoteField |
+    BooleanField);
 
