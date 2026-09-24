@@ -13,8 +13,7 @@ import type { Parent } from "./types/Parent.js";
  * @internal
  */
 export class WebMock {
-    constructor(private web: Parent<Site, Web>) {
-    }
+    constructor(private web: Parent<Site, Web>) {}
 
     public get lists() {
         return new ListsMock(this.web.lists);
@@ -29,12 +28,14 @@ export class WebMock {
     }
 
     public get defaultDocumentLibrary() {
-        const list = this.web.lists?.find(l => l.baseTemplate === 101 && l.isDefaultDocumentLibrary);
+        const list = this.web.lists?.find(
+            (l) => l.baseTemplate === 101 && l.isDefaultDocumentLibrary
+        );
         return new ListMock(this.web?.lists, list);
     }
 
     public ensureUser(payload: { logonName: string }) {
-        const user = this.web.parent?.users?.find(u => u.loginName === payload.logonName);
+        const user = this.web.parent?.users?.find((u) => u.loginName === payload.logonName);
         if (!user) {
             return new Response(undefined, { status: 404 });
         }
@@ -43,17 +44,44 @@ export class WebMock {
                 value: {
                     Id: user.id,
                     Title: user.title,
-                }
-            }), { status: 200 });
+                },
+            }),
+            { status: 200 }
+        );
     }
 
     getList = (listRelativeUrl: string) => {
-        const list = this.web?.lists?.find(list => {
+        const list = this.web?.lists?.find((list) => {
             const url = Utils.urls.combine(this.web.serverRelativeUrl, list.url);
             return Utils.urls.equals(url, listRelativeUrl);
         });
 
         return new ListMock(this.web?.lists, list);
+    };
+
+    getFileByServerRelativePath = (path: string) => {
+        const lists = this.web.lists ?? [];
+        for (const list of lists) {
+            if (list.baseTemplate !== 101 || !list.rootFolder) {
+                continue;
+            }
+            const listPath = Utils.urls.combine(this.web.serverRelativeUrl, list.url);
+            const listPrefix = `${Utils.strings.trimEnd(listPath, "/")}/`.toLowerCase();
+            if (!path.toLowerCase().startsWith(listPrefix)) {
+                continue;
+            }
+            const parts = path.slice(listPath.length + 1).split("/");
+            let folder: Folder | undefined = list.rootFolder;
+            for (const part of parts.slice(0, -1)) {
+                folder = folder?.folders?.find((child) => child.name === part);
+            }
+            const files = folder?.files;
+            return new FileMock(
+                files,
+                files?.find((file) => file.name === parts[parts.length - 1])
+            );
+        }
+        return new FileMock(undefined, undefined);
     };
 
     getFileById = (id: string) => {
@@ -70,7 +98,7 @@ export class WebMock {
                 if (!folder) {
                     return undefined;
                 }
-                let file = folder.files?.find(f => f.uniqueId === id);
+                let file = folder.files?.find((f) => f.uniqueId === id);
                 if (file) {
                     return file;
                 }
@@ -80,7 +108,7 @@ export class WebMock {
                         if (file) {
                             return file;
                         }
-                    }   
+                    }
                 }
                 return undefined;
             };
@@ -95,7 +123,7 @@ export class WebMock {
     };
 
     get = async () => {
-        if (!this.web) {
+        if (!this.web?.serverRelativeUrl) {
             return new Response(undefined, { status: 404 });
         }
         return new Response(
@@ -103,7 +131,7 @@ export class WebMock {
                 Title: this.web.title,
                 ServerRelativeUrl: this.web.serverRelativeUrl,
             }),
-            { status: 200 },
+            { status: 200 }
         );
     };
 }

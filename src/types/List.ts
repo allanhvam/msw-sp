@@ -28,15 +28,15 @@ export enum PageType {
     NewForm = 8,
     NewFormDialog = 9,
     SolutionForm = 10,
-    PAGE_MAXITEMS = 11
+    PAGE_MAXITEMS = 11,
 }
 
 export type Form = {
-    id?: string,
-    formType?: PageType,
-    serverRelativeUrl?: string,
-    decodedUrl?: string,
-}
+    id?: string;
+    formType?: PageType;
+    serverRelativeUrl?: string;
+    decodedUrl?: string;
+};
 
 // https://learn.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-wssts/8bf797af-288c-4a1d-a14b-cf5394e636cf
 export type GenericList = {
@@ -47,17 +47,16 @@ export type GenericList = {
      */
     baseTemplate?: 100 | 106;
     items: Array<Record<string, any>>;
-}
+};
 
 export type DocumentLibraryList = {
     baseTemplate: 101;
     items: Array<Record<string, any>>;
     isDefaultDocumentLibrary?: boolean;
-
     rootFolder?: Folder;
-}
+};
 
 export type SitePagesList = {
     baseTemplate: 119;
     items: Array<Record<string, any>>;
-}
+};
