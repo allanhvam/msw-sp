@@ -2,6 +2,10 @@
     "name": "msw-sp",
     "version": "1.14.0",
     "description": "MSW handlers for mocking SharePoint REST api.",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/allanhvam/msw-sp.git"
+    },
     "main": "lib/index.js",
     "engines": {
         "node": ">=18.17.1"
