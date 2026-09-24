@@ -50,8 +50,16 @@ void describe("filters", async () => {
                                 url: "lists/full",
                                 hidden: true,
                                 items: [
-                                    { Title: "First", CategoryId: 5 },
-                                    { Title: "Second", CategoryId: 9 },
+                                    {
+                                        Title: "First",
+                                        CategoryId: 5,
+                                        Category: { Title: "Hardware" },
+                                    },
+                                    {
+                                        Title: "Second",
+                                        CategoryId: 9,
+                                        Category: { Title: "Software" },
+                                    },
                                 ],
                                 created: "2024-01-01T12:00:00Z",
                             },
@@ -154,6 +162,28 @@ void describe("filters", async () => {
         );
     });
 
+    await test("startswith filters by title prefix", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("startswith(Title,'Fil')")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Filters"]
+        );
+    });
+
+    await test("substringof filters by title fragment", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("substringof('ull',Title)")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Full"]
+        );
+    });
+
     await test("ne excludes matching title", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/filter")));
 
@@ -206,6 +236,19 @@ void describe("filters", async () => {
         assert.deepEqual(
             items.map((item) => item.Title),
             ["Second"]
+        );
+    });
+
+    await test("filters list items by lookup value", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const items = await sp.web.lists
+            .getByTitle("Full")
+            .items.filter("Category/Title eq 'Hardware'")();
+
+        assert.deepEqual(
+            items.map((item) => item.Title),
+            ["First"]
         );
     });
 
@@ -264,6 +307,72 @@ void describe("filters", async () => {
         );
     });
 
+    await test("day filters by UTC day", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("day(Created) eq 21")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Filters"]
+        );
+    });
+
+    await test("month filters by UTC month", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("month(Created) eq 3")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Filters"]
+        );
+    });
+
+    await test("year filters by UTC year", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("year(Created) eq 2020")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Empty"]
+        );
+    });
+
+    await test("hour filters by UTC hour", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("hour(Created) eq 11")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Filters"]
+        );
+    });
+
+    await test("minute filters by UTC minute", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("minute(Created) eq 21")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Filters"]
+        );
+    });
+
+    await test("second filters by UTC second", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/filter")));
+
+        const lists = await sp.web.lists.filter("second(Created) eq 8")();
+
+        assert.deepEqual(
+            lists.map((list) => list.Title),
+            ["Filters"]
+        );
+    });
+
     await test("ge datetime includes boundary", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/filter")));
 
@@ -300,7 +409,9 @@ void describe("filters", async () => {
     await test("parentheses group or before and", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/filter")));
 
-        const lists = await sp.web.lists.filter("(Title eq 'Empty' or ItemCount eq 2) and ItemCount gt 0")();
+        const lists = await sp.web.lists.filter(
+            "(Title eq 'Empty' or ItemCount eq 2) and ItemCount gt 0"
+        )();
 
         assert.deepEqual(
             lists.map((list) => list.Title),
