@@ -1,6 +1,6 @@
 {
     "name": "msw-sp",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "description": "MSW handlers for mocking SharePoint REST api.",
     "main": "lib/index.js",
     "engines": {
@@ -9,7 +9,7 @@
     "type": "module",
     "scripts": {
         "build": "npx tsc",
-        "test": "node --test",
+        "test": "npm run build && node --test lib/tests/*.test.js",
         "lint": "npx eslint .",
         "watch": "npx tsc --watch"
     },
