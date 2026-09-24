@@ -1,11 +1,10 @@
-import type { AndFilter, Filter, FilterTarget } from "eh-odata-parser";
-import pkg from "eh-odata-parser";
 import type { DefaultBodyType, DelayMode, PathParams, ResponseResolver, StrictRequest } from "msw";
 import { delay, http } from "msw";
 import type { HttpRequestResolverExtras } from "msw/lib/core/handlers/HttpHandler.js";
 import { TenantMock } from "./mocks/TenantMock.js";
+import type { Filter, FilterTarget } from "./odata-parser/index.js";
+import { parseFilter } from "./odata-parser/index.js";
 import type { Tenant } from "./types/Tenant.js";
-const { parse } = pkg;
 
 const response = async (response: Response, info: { request: StrictRequest<DefaultBodyType> }) => {
     if (response.status !== 200) {
@@ -16,29 +15,8 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
     const url = info.request.url;
 
     // OData functions
-    type OrFilter = {
-        type: "or";
-        left: Filter;
-        right: Filter;
-    };
-
-    type FunctionCall = {
-        type: "functioncall";
-        func: string;
-        args: Array<FilterTarget | FunctionCall>;
-    };
-
-    type CompareFilter = {
-        type: "gt" | "lt" | "ge" | "le" | "ne" | "eq";
-        left: FilterTarget | FunctionCall;
-        right: FilterTarget | FunctionCall;
-    };
-
-    const filterObjects = <T>(
-        objects: Array<T>,
-        ast: Filter | AndFilter | OrFilter | CompareFilter | FunctionCall
-    ): Array<T> => {
-        const getTarget = (target: FilterTarget | FunctionCall): ((o: any) => any) => {
+    const filterObjects = <T>(objects: Array<T>, ast: Filter): Array<T> => {
+        const getTarget = (target: FilterTarget): ((o: any) => any) => {
             return (o: any) => {
                 switch (target.type) {
                     case "literal":
@@ -93,8 +71,6 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
                                 );
                         }
                     }
-                    case "array":
-                        throw new Error("msw-sp: 'array' odata filter not implemented");
                 }
             };
         };
@@ -153,7 +129,7 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
                 return objects.filter((o) => left(o) !== right(o));
             }
             default:
-                throw new Error(`msw-sp: odata filter operator ${ast.type} not implemented.`);
+                throw new Error("msw-sp: odata filter operator not implemented.");
         }
     };
 
@@ -161,24 +137,11 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
         if (!objects) {
             return objects;
         }
-        const { search } = new URL(url);
-        let uri = decodeURIComponent(search);
-        if (uri.indexOf("?") === 0) {
-            uri = uri.substring(1);
-        }
-        // Replace + with space
-        uri = uri.replace(/\+/g, " ");
-        if (!uri) {
+        const expression = new URL(url).searchParams.get("$filter");
+        if (!expression) {
             return objects;
         }
-        // Replace datetime'DATE' with DATE
-        uri = uri.replace(/datetime'(\S+)'/g, "'$1'");
-        const ast = parse(uri);
-
-        if (ast.$filter) {
-            return filterObjects(objects || [], ast.$filter);
-        }
-        return objects;
+        return filterObjects(objects, parseFilter(expression));
     };
 
     const orderBy = <T>(objects: Array<T> | undefined): Array<T> | undefined => {
