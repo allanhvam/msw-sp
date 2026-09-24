@@ -23,7 +23,7 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
     };
 
     type CompareFilter = {
-        type: "gt" | "lt" | "ge" | "le";
+        type: "gt" | "lt" | "ge" | "le" | "ne";
         left: FilterTarget;
         right: FilterTarget;
     };
@@ -89,6 +89,12 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
                 const right = getTarget(ast.right);
 
                 return objects.filter((o) => left(o) === right(o));
+            }
+            case "ne": {
+                const left = getTarget(ast.left);
+                const right = getTarget(ast.right);
+
+                return objects.filter((o) => left(o) !== right(o));
             }
             default:
                 throw new Error(`msw-sp: odata filter operator ${ast.type} not implemented.`);
