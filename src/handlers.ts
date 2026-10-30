@@ -3,7 +3,7 @@ import { delay, http } from "msw";
 import type { HttpRequestResolverExtras } from "msw/lib/core/handlers/HttpHandler.js";
 import { personPlaceholder } from "./assets/people-placeholder.js";
 import { TenantMock } from "./mocks/TenantMock.js";
-import { filter, orderBy, top } from "./odata-query-options/index.js";
+import { filter, orderBy, select, top } from "./odata-query-options/index.js";
 import type { Tenant } from "./types/Tenant.js";
 
 const response = async (response: Response, info: { request: StrictRequest<DefaultBodyType> }) => {
@@ -20,6 +20,7 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
         json = orderBy(url, json);
         json = top(url, json);
     }
+    json = select(url, json);
 
     return new Response(JSON.stringify(json), {
         status: response.status,
