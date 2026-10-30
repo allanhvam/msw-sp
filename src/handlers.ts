@@ -1,6 +1,7 @@
 import type { DefaultBodyType, DelayMode, PathParams, ResponseResolver, StrictRequest } from "msw";
 import { delay, http } from "msw";
 import type { HttpRequestResolverExtras } from "msw/lib/core/handlers/HttpHandler.js";
+import { personPlaceholder } from "./assets/people-placeholder.js";
 import { TenantMock } from "./mocks/TenantMock.js";
 import type { Filter, FilterTarget } from "./odata-parser/index.js";
 import { parseFilter } from "./odata-parser/index.js";
@@ -244,6 +245,17 @@ export const handlers = (options: Tenant | { tenant: Tenant; delay?: DelayMode |
     // https://github.com/pillarjs/path-to-regexp
     return [
         // MARK: GET
+        ...get("/_layouts/15/userphoto.aspx", (info) => {
+            const site = info.params.site?.toString();
+            const existingSite = site ? tenant.sites?.[site] : tenant.sites?.["/"] || tenant.sites?.[""];
+            if (!existingSite) {
+                return new Response(undefined, { status: 404 });
+            }
+            const image = Uint8Array.from(atob(personPlaceholder), (character) => character.charCodeAt(0));
+            return new Response(image, {
+                headers: { "Content-Type": "image/png" },
+            });
+        }),
         ...get("/_api/site/rootweb", async (info) => {
             const site = info.params.site?.toString() || "/";
             return response(await tenantMock.sites.getSite(site).rootWeb.get(), info);
