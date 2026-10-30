@@ -68,7 +68,7 @@ export const Utils = {
         },
 
         trimEnd: (s: string, trim: string) => {
-            while (s.lastIndexOf(trim) === s.length - trim.length) {
+            while (trim.length > 0 && s.endsWith(trim)) {
                 s = s.substring(0, s.length - trim.length);
             }
             return s;

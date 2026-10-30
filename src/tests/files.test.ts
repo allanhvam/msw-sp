@@ -7,6 +7,7 @@ import "@pnp/sp/lists/index.js";
 import "@pnp/sp/site-users/index.js";
 import "@pnp/sp/sites/index.js";
 import "@pnp/sp/webs/index.js";
+import { http } from "msw";
 import { setupServer } from "msw/node";
 import assert from "node:assert";
 import { describe, test } from "node:test";
@@ -19,6 +20,23 @@ void describe("files", async () => {
             title: "tenant",
             url,
             sites: {
+                "/": {
+                    rootWeb: {
+                        title: "Root Site",
+                        serverRelativeUrl: "/",
+                        lists: [
+                            {
+                                title: "Documents",
+                                baseTemplate: 101,
+                                url: "Shared Documents",
+                                items: [],
+                                rootFolder: {
+                                    files: [{ name: "root.txt", content: "root file" }],
+                                },
+                            },
+                        ],
+                    },
+                },
                 files: {
                     rootWeb: {
                         title: "Files Site",
@@ -52,11 +70,29 @@ void describe("files", async () => {
                                     ],
                                 },
                             },
+                            {
+                                title: "Shared Documents",
+                                baseTemplate: 101,
+                                url: "Shared Documents",
+                                items: [],
+                                rootFolder: {
+                                    files: [
+                                        { name: "report #1 + 100%.txt", content: "encoded file" },
+                                    ],
+                                    folders: [
+                                        {
+                                            name: "Nested Folder",
+                                            files: [{ name: "file.txt", content: "nested file" }],
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 },
             },
-        })
+        }),
+        http.get(`${url}/assets/app.js`, () => new Response("application asset"))
     );
     server.listen();
 
@@ -73,6 +109,71 @@ void describe("files", async () => {
             },
         };
     };
+
+    await test("fetches document library contents directly", async () => {
+        for (const [path, content] of [
+            ["/sites/files/Lists/Documents/Package.txt", "msw-sp"],
+            ["/sites/files/Lists/Documents/Archive/older.txt", "older"],
+            ["/Shared%20Documents/root.txt", "root file"],
+            ["/sites/files/Shared%20Documents/report%20%231%20%2B%20100%25.txt", "encoded file"],
+            ["/sites/files/Shared%20Documents/Nested%20Folder/file.txt?download=1", "nested file"],
+        ]) {
+            const result = await fetch(`${url}${path}`);
+
+            assert.equal(result.status, 200);
+            assert.equal(await result.text(), content);
+        }
+    });
+
+    await test("direct document URLs return 404 for missing files and folders", async () => {
+        for (const path of [
+            "/sites/files/Lists/Documents/missing.txt",
+            "/sites/files/Lists/Documents/Missing/file.txt",
+            "/sites/files/Shared%20Documents/Nested%20Folder/missing.txt",
+            "/Shared%20Documents/missing.txt",
+        ]) {
+            const result = await fetch(`${url}${path}`);
+
+            assert.equal(result.status, 404);
+            assert.equal(await result.text(), "");
+        }
+    });
+
+    await test("downloads files uploaded to libraries created at runtime", async () => {
+        for (const sitePath of ["", "/sites/files"]) {
+            const sp = spfi().using(SPFx(getContext(sitePath)));
+            const title = "Runtime Documents";
+            const created = await sp.web.lists.add(title, "Created at runtime", 101);
+            assert.equal(created.Title, title);
+
+            const libraryPath = `${sitePath}/${title}`;
+            const files = sp.site.rootWeb.getList(libraryPath).rootFolder.files;
+            const fileUrl = `${url}${sitePath}/Runtime%20Documents/runtime.txt`;
+            assert.equal((await fetch(fileUrl)).status, 404);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start: (controller) => {
+                    controller.enqueue(new TextEncoder().encode("uploaded at runtime"));
+                    controller.close();
+                },
+            });
+            await files.addChunked("runtime.txt", stream);
+
+            const result = await fetch(fileUrl);
+            assert.equal(result.status, 200);
+            assert.equal(await result.text(), "uploaded at runtime");
+
+            await files.getByUrl("runtime.txt").delete();
+            assert.equal((await fetch(fileUrl)).status, 404);
+        }
+    });
+
+    await test("direct file routing leaves unrelated requests to other handlers", async () => {
+        const result = await fetch(`${url}/assets/app.js`);
+
+        assert.equal(result.status, 200);
+        assert.equal(await result.text(), "application asset");
+    });
 
     await test("files", async () => {
         const sp = spfi().using(SPFx(getContext("/sites/files")));
