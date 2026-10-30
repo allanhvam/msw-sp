@@ -3,8 +3,7 @@ import { delay, http } from "msw";
 import type { HttpRequestResolverExtras } from "msw/lib/core/handlers/HttpHandler.js";
 import { personPlaceholder } from "./assets/people-placeholder.js";
 import { TenantMock } from "./mocks/TenantMock.js";
-import type { Filter, FilterTarget } from "./odata-parser/index.js";
-import { parseFilter } from "./odata-parser/index.js";
+import { filter, orderBy, top } from "./odata-query-options/index.js";
 import type { Tenant } from "./types/Tenant.js";
 
 const response = async (response: Response, info: { request: StrictRequest<DefaultBodyType> }) => {
@@ -15,184 +14,11 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
     let json = await response.json();
     const url = info.request.url;
 
-    // OData functions
-    const filterObjects = <T>(objects: Array<T>, ast: Filter): Array<T> => {
-        const getTarget = (target: FilterTarget): ((o: any) => any) => {
-            return (o: any) => {
-                switch (target.type) {
-                    case "literal":
-                        return target.value;
-                    case "property":
-                        return target.name.split("/").reduce((value, key) => value?.[key], o);
-                    case "functioncall": {
-                        const [first, second] = target.args.map((arg) => getTarget(arg)(o));
-                        switch (target.func) {
-                            case "startswith":
-                                return (
-                                    typeof first === "string" &&
-                                    typeof second === "string" &&
-                                    first.startsWith(second)
-                                );
-                            case "substringof":
-                                return (
-                                    typeof first === "string" &&
-                                    typeof second === "string" &&
-                                    second.includes(first)
-                                );
-                            case "day":
-                            case "month":
-                            case "year":
-                            case "hour":
-                            case "minute":
-                            case "second": {
-                                if (typeof first !== "string") {
-                                    return undefined;
-                                }
-                                const date = new Date(first);
-                                switch (target.func) {
-                                    case "day":
-                                        return date.getUTCDate();
-                                    case "month":
-                                        return date.getUTCMonth() + 1;
-                                    case "year":
-                                        return date.getUTCFullYear();
-                                    case "hour":
-                                        return date.getUTCHours();
-                                    case "minute":
-                                        return date.getUTCMinutes();
-                                    case "second":
-                                        return date.getUTCSeconds();
-                                    default:
-                                        return undefined;
-                                }
-                            }
-                            default:
-                                throw new Error(
-                                    `msw-sp: odata function ${target.func} not implemented.`
-                                );
-                        }
-                    }
-                }
-            };
-        };
-
-        switch (ast.type) {
-            case "functioncall":
-                return objects.filter((o) => getTarget(ast)(o));
-            case "or": {
-                const left = filterObjects(objects, ast.left);
-                const right = filterObjects(objects, ast.right);
-
-                return left.concat(right).filter((value, index, array) => {
-                    return array.indexOf(value) === index;
-                });
-            }
-            case "and": {
-                const left = filterObjects(objects, ast.left);
-                const right = filterObjects(objects, ast.right);
-
-                return left.filter((l) => right.find((r) => r === l));
-            }
-            case "lt": {
-                const left = getTarget(ast.left);
-                const right = getTarget(ast.right);
-
-                return objects.filter((o) => left(o) < right(o));
-            }
-            case "le": {
-                const left = getTarget(ast.left);
-                const right = getTarget(ast.right);
-
-                return objects.filter((o) => left(o) <= right(o));
-            }
-            case "gt": {
-                const left = getTarget(ast.left);
-                const right = getTarget(ast.right);
-
-                return objects.filter((o) => left(o) > right(o));
-            }
-            case "ge": {
-                const left = getTarget(ast.left);
-                const right = getTarget(ast.right);
-
-                return objects.filter((o) => left(o) >= right(o));
-            }
-            case "eq": {
-                const left = getTarget(ast.left);
-                const right = getTarget(ast.right);
-
-                return objects.filter((o) => left(o) === right(o));
-            }
-            case "ne": {
-                const left = getTarget(ast.left);
-                const right = getTarget(ast.right);
-
-                return objects.filter((o) => left(o) !== right(o));
-            }
-            default:
-                throw new Error("msw-sp: odata filter operator not implemented.");
-        }
-    };
-
-    const filter = <T>(objects: Array<T> | undefined): Array<T> | undefined => {
-        if (!objects) {
-            return objects;
-        }
-        const expression = new URL(url).searchParams.get("$filter");
-        if (!expression) {
-            return objects;
-        }
-        return filterObjects(objects, parseFilter(expression));
-    };
-
-    const orderBy = <T>(objects: Array<T> | undefined): Array<T> | undefined => {
-        if (!objects) {
-            return objects;
-        }
-        const { search } = new URL(url);
-        let uri = decodeURIComponent(search);
-        if (uri.indexOf("?") === 0) {
-            uri = uri.substring(1);
-        }
-        // Replace + with space
-        uri = uri.replace(/\+/g, " ");
-        if (!uri) {
-            return objects;
-        }
-
-        const searchParams = new URLSearchParams(uri);
-        if (searchParams.has("$orderby")) {
-            let orderBy = searchParams.get("$orderby") ?? "";
-            if (orderBy.includes(",")) {
-                console.log("msw-sp: odata $orderby only supported on one property");
-                orderBy = orderBy.split(",")[0];
-            }
-            const [property, order] = orderBy.split(" ");
-            objects.sort((a, b) => {
-                const aValue = a[property];
-                const bValue = b[property];
-                if (typeof aValue === "number" && typeof bValue === "number") {
-                    if (order === "desc") {
-                        return bValue - aValue;
-                    }
-                    return aValue - bValue;
-                }
-                const aStr: string = aValue?.toString() ?? "";
-                const bStr: string = bValue?.toString() ?? "";
-
-                if (order === "desc") {
-                    return bStr.localeCompare(aStr);
-                }
-                return aStr.localeCompare(bStr);
-            });
-        }
-
-        return objects;
-    };
-
     // Handle OData params
     if (Array.isArray(json)) {
-        json = orderBy(filter(json));
+        json = filter(url, json);
+        json = orderBy(url, json);
+        json = top(url, json);
     }
 
     return new Response(JSON.stringify(json), {
@@ -247,11 +73,15 @@ export const handlers = (options: Tenant | { tenant: Tenant; delay?: DelayMode |
         // MARK: GET
         ...get("/_layouts/15/userphoto.aspx", (info) => {
             const site = info.params.site?.toString();
-            const existingSite = site ? tenant.sites?.[site] : tenant.sites?.["/"] || tenant.sites?.[""];
+            const existingSite = site
+                ? tenant.sites?.[site]
+                : tenant.sites?.["/"] || tenant.sites?.[""];
             if (!existingSite) {
                 return new Response(undefined, { status: 404 });
             }
-            const image = Uint8Array.from(atob(personPlaceholder), (character) => character.charCodeAt(0));
+            const image = Uint8Array.from(atob(personPlaceholder), (character) =>
+                character.charCodeAt(0)
+            );
             return new Response(image, {
                 headers: { "Content-Type": "image/png" },
             });

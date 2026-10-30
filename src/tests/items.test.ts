@@ -28,6 +28,16 @@ void describe("items", async () => {
                             ],
                             created: "2023-03-21T11:21:08Z",
                         },
+                        {
+                            title: "Top",
+                            baseTemplate: 100,
+                            url: "lists/top",
+                            items: [
+                                { Id: 1, Title: "Charlie" },
+                                { Id: 2, Title: "Alpha" },
+                                { Id: 3, Title: "Bravo" },
+                            ],
+                        },
                     ],
                 },
             },
@@ -90,6 +100,49 @@ void describe("items", async () => {
 
         items = await list.items();
         assert.equal(items.length, 0);
+    });
+
+    await test("top limits items without changing subsequent requests", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/items")));
+        const list = sp.web.lists.getByTitle("Top");
+
+        const items = await list.items.top(1)();
+
+        assert.deepStrictEqual(items.map(item => item.Id), [1]);
+        assert.equal((await list.items()).length, 3);
+    });
+
+    await test("top zero returns no items", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/items")));
+
+        const items = await sp.web.lists.getByTitle("Top").items.top(0)();
+
+        assert.deepStrictEqual(items, []);
+    });
+
+    await test("top above item count returns all items", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/items")));
+
+        const items = await sp.web.lists.getByTitle("Top").items.top(100)();
+
+        assert.deepStrictEqual(items.map(item => item.Id), [1, 2, 3]);
+    });
+
+    await test("top is applied after filtering and ordering", async () => {
+        const sp = spfi().using(SPFx(getContext("/sites/items")));
+
+        const items = await sp.web.lists.getByTitle("Top").items
+            .filter("Id gt 1").orderBy("Title", false).top(1)();
+
+        assert.deepStrictEqual(items.map(item => item.Id), [3]);
+    });
+
+    await test("invalid top values return 400", async () => {
+        for (const top of ["-1", "1.5", "invalid", "", "9007199254740992"]) {
+            const result = await fetch(`${url}/sites/items/_api/web/lists/getByTitle('Top')/items?$top=${top}`);
+
+            assert.equal(result.status, 400);
+        }
     });
 
     await test("items, async Iterator", async () => {
