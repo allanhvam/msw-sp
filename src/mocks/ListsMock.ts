@@ -6,17 +6,15 @@ import { ListMock } from "./ListMock.js";
  * @internal
  */
 export class ListsMock {
-
-    constructor(private lists?: Array<List>) {
-    }
+    constructor(private lists?: Array<List>) {}
 
     getByTitle = (title: string) => {
-        const list = this.lists?.find(list => list.title === title);
+        const list = this.lists?.find((list) => list.title === title);
         return new ListMock(this.lists, list);
     };
 
     getById = (id: string) => {
-        const list = this.lists?.find(list => list.id === id);
+        const list = this.lists?.find((list) => list.id === id);
         return new ListMock(this.lists, list);
     };
 
@@ -25,17 +23,14 @@ export class ListsMock {
             return new Response(undefined, { status: 404 });
         }
 
-        const mocks = this.lists.map(list => new ListMock(this.lists, list));
+        const mocks = this.lists.map((list) => new ListMock(this.lists, list));
         const infos = new Array<any>();
         for (let i = 0; i !== mocks.length; i++) {
             const list = await mocks[i].get();
             infos.push(await list.json());
         }
 
-        return new Response(
-            JSON.stringify(infos),
-            { status: 200 },
-        );
+        return new Response(JSON.stringify(infos), { status: 200 });
     };
 
     post = async (payload: any) => {
@@ -46,6 +41,10 @@ export class ListsMock {
         list.id = Utils.strings.getGUID();
         list.created = new Date().toISOString();
         list.items = [];
+        if (list.baseTemplate === 101) {
+            list.url ||= list.title;
+            list.rootFolder ??= { name: list.title, files: [] };
+        }
         this.lists.push(list);
 
         return await new ListMock(this.lists, list).get();

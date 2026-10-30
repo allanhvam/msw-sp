@@ -5,6 +5,7 @@ import { personPlaceholder } from "./assets/people-placeholder.js";
 import { TenantMock } from "./mocks/TenantMock.js";
 import { filter, orderBy, select, top } from "./odata-query-options/index.js";
 import type { Tenant } from "./types/Tenant.js";
+import { Utils } from "./Utils.js";
 
 const response = async (response: Response, info: { request: StrictRequest<DefaultBodyType> }) => {
     if (response.status !== 200) {
@@ -19,6 +20,9 @@ const response = async (response: Response, info: { request: StrictRequest<Defau
         json = filter(url, json);
         json = orderBy(url, json);
         json = top(url, json);
+        if (json instanceof Response) {
+            return json;
+        }
     }
     json = select(url, json);
 
@@ -634,6 +638,29 @@ export const handlers = (options: Tenant | { tenant: Tenant; delay?: DelayMode |
                 new Response(undefined, { status: 501, statusText: "Not Implemented (GET)" }),
                 info
             );
+        }),
+        ...get("/*", async ({ request }) => {
+            const filePath = decodeURIComponent(new URL(request.url).pathname);
+            for (const [siteName, site] of Object.entries(tenant.sites ?? {})) {
+                const web = site.rootWeb;
+                if (!web?.serverRelativeUrl) {
+                    continue;
+                }
+                const library = web.lists?.find((list) => {
+                    if (list.baseTemplate !== 101) {
+                        return false;
+                    }
+                    const path = Utils.urls.combine(web.serverRelativeUrl, list.url);
+                    const prefix = `${Utils.strings.trimEnd(path, "/")}/`;
+                    return filePath.toLowerCase().startsWith(prefix.toLowerCase());
+                });
+                if (library) {
+                    return tenantMock.sites
+                        .getSite(siteName)
+                        .rootWeb.getFileByServerRelativePath(filePath)
+                        .getContent();
+                }
+            }
         }),
 
         // MARK: POST
